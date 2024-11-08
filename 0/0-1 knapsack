@@ -1,0 +1,49 @@
+// 4-Write a program to solve a 0-1 Knapsack problem using dynamic programming or branch and bound strategy.
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+std::pair<int, std::vector<int>> knapsack_01(const std::vector<int>& values, const std::vector<int>& weights, int capacity) {
+    int n = values.size();
+    std::vector<std::vector<int>> dp(n + 1, std::vector<int>(capacity + 1, 0));
+
+    for (int i = 0; i <= n; ++i) {
+        for (int w = 0; w <= capacity; ++w) {
+            if (i == 0 || w == 0) {
+                dp[i][w] = 0;
+            } else if (weights[i - 1] <= w) {
+                dp[i][w] = std::max(dp[i - 1][w], dp[i - 1][w - weights[i - 1]] + values[i - 1]);
+            } else {
+                dp[i][w] = dp[i - 1][w];
+            }
+        }
+    }
+
+    // Traceback to find the selected items
+    std::vector<int> selected_items;
+    int i = n, w = capacity;
+    while (i > 0 && w > 0) {
+        if (dp[i][w] != dp[i - 1][w]) {
+            selected_items.push_back(i - 1);
+            w -= weights[i - 1];
+        }
+        i--;
+    }
+    std::reverse(selected_items.begin(), selected_items.end());
+    return {dp[n][capacity], selected_items};
+}
+
+int main() {
+    std::vector<int> values = {60, 100, 120};
+    std::vector<int> weights = {10, 20, 30};
+    int capacity = 50;
+    auto [max_value, selected_items] = knapsack_01(values, weights, capacity);
+    std::cout << "Maximum value: " << max_value << std::endl;
+    std::cout << "Selected items: ";
+    for (int item : selected_items) {
+        std::cout << item << " ";
+    }
+    std::cout << std::endl;
+    return 0;
+}
+
